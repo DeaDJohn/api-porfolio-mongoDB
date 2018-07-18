@@ -2,6 +2,8 @@
 
 var Project = require('../models/project');
 
+var fs = require('fs');
+
 var controller = {
     home: function(req, res) {
         return res.status(200).send({
@@ -123,22 +125,30 @@ var controller = {
             var filePath = req.files.image.path;
             var fileSplit = filePath.split('\\');
             var fileName = fileSplit[1];
-            console.log(req.files);
-            Project.findByIdAndUpdate(projectId, { image: fileName }, { new: true }, (err, projectUpdated) => {
-                if (err) res.status(500).send({
-                    message: "La imagen no se ha súbido"
+            var extSplit = fileName.split('\.');
+            var fileExt = extSplit[1];
+
+            if (fileExt == 'png' || fileExt == 'jpg' || fileExt == 'jpeg' || fileExt == 'gif') {
+
+                Project.findByIdAndUpdate(projectId, { image: fileName }, { new: true }, (err, projectUpdated) => {
+                    if (err) res.status(500).send({
+                        message: "La imagen no se ha súbido"
+                    });
+                    if (!projectUpdated) res.status(404).send({
+                        message: "El proyecto no existe"
+                    });
+                    return res.status(200).send({
+                        project: projectUpdated,
+                        message: 'Imagen guardada'
+                    });
                 });
-                if (!projectUpdated) res.status(404).send({
-                    message: "El proyecto no existe"
+
+            } else {
+                fs.unlink(filePath, (err) => {
+                    return res.status(200).send({ message: 'La extensión no es válida' });
                 });
-                return res.status(200).send({
-                    project: projectUpdated
-                });
-            });
-            return res.status(200).send({
-                files: req.files,
-                message: fileName
-            });
+            }
+
         } else {
             return res.status(200).send({
                 message: fileName,
