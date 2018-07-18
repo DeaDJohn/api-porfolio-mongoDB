@@ -85,6 +85,66 @@ var controller = {
                 projectUpdated
             });
         });
+    },
+
+    deleteProject: function(req, res) {
+        var projectId = req.params.id;
+        var update = req.body;
+
+        if (projectId == null) return res.status(404).send({
+            message: "No ha seleccionado ningún proyecto"
+        });
+
+        Project.findByIdAndRemove(projectId, (err, projectRemove) => {
+            if (err) res.status(500).send({
+                message: "No se ha podido borrar el proyecto"
+            });
+
+            if (!projectRemove) res.status(404).send({
+                message: "No se puede eliminar ese proyecto"
+            });
+
+            return res.status(200).send({
+                project: projectRemove,
+                message: "Proyecto eliminado"
+            });
+        });
+    },
+
+    uploadImage: function(req, res) {
+        var projectId = req.params.id;
+        var fileName = "Imagen no súbida...";
+        console.log(req.files);
+        if (projectId == null) return res.status(404).send({
+            message: "No ha seleccionado ningún proyecto"
+        });
+
+        if (req.files) {
+            var filePath = req.files.image.path;
+            var fileSplit = filePath.split('\\');
+            var fileName = fileSplit[1];
+            console.log(req.files);
+            Project.findByIdAndUpdate(projectId, { image: fileName }, { new: true }, (err, projectUpdated) => {
+                if (err) res.status(500).send({
+                    message: "La imagen no se ha súbido"
+                });
+                if (!projectUpdated) res.status(404).send({
+                    message: "El proyecto no existe"
+                });
+                return res.status(200).send({
+                    project: projectUpdated
+                });
+            });
+            return res.status(200).send({
+                files: req.files,
+                message: fileName
+            });
+        } else {
+            return res.status(200).send({
+                message: fileName,
+            });
+        }
+
     }
 
 }
