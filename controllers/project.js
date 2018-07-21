@@ -85,7 +85,8 @@ var controller = {
             });
 
             return res.status(200).send({
-                projectUpdated
+                project: projectUpdated,
+                message: 'Proyecto actualizado'
             });
         });
     },
